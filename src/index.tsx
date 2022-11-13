@@ -54,12 +54,13 @@ declare global {
     };
   }
 }
+export type HmtlTagName = string;
+export type FunctionComponent<
+  P extends Record<string, any> = Record<string, any>
+> = (props: P) => JSX.Element;
 
 type JSXConverter<K extends keyof JSX.IntrinsicElements> = (
-  element:
-    | string
-    | JSX.ElementClassConstructor
-    | ((props: Record<string, any>) => string),
+  element: HmtlTagName | JSX.ElementClassConstructor | FunctionComponent,
   props: Record<string, any>,
   ...children: string[]
 ) => void;
@@ -81,43 +82,6 @@ const VOID_ELEMENT_SET = new Set([
   "track",
   "wbr",
 ]);
-
-function isClass(func: unknown): func is JSX.ElementClassConstructor {
-  return (
-    typeof func === "function" &&
-    /^class\s/.test(Function.prototype.toString.call(func))
-  );
-}
-export const jsxToHtml: JSXConverter<keyof JSX.IntrinsicElements> = (
-  element,
-  props,
-  ...children
-) => {
-  let html = "";
-  if (typeof element === "string") {
-    html = VOID_ELEMENT_SET.has(element)
-      ? `<${element} ${props ? ` ${renderProps(props)}` : ""}/>`
-      : `<${element}${props ? ` ${renderProps(props)}` : ""}>${children.join(
-          ""
-        )}</${element}>`;
-  } else {
-    if (props && children) {
-      props.children = children.join("");
-    }
-    try {
-      const component = new (element as JSX.ElementClassConstructor)();
-      html = component.render();
-    } catch (e) {}
-
-    if (isClass(element)) {
-      html = new element(props).render();
-    } else {
-      html = element(props);
-    }
-  }
-
-  return html;
-};
 
 function renderProps(props: Record<string, any> | undefined): string {
   if (!props) {
@@ -141,3 +105,35 @@ function renderProps(props: Record<string, any> | undefined): string {
   }
   return attributes.join(" ");
 }
+
+export const jsxToHtml: JSXConverter<keyof JSX.IntrinsicElements> = (
+  element,
+  props,
+  ...children
+) => {
+  let html = "";
+  if (typeof element === "string") {
+    html = VOID_ELEMENT_SET.has(element)
+      ? `<${element} ${props ? ` ${renderProps(props)}` : ""}/>`
+      : `<${element}${props ? ` ${renderProps(props)}` : ""}>${children.join(
+          ""
+        )}</${element}>`;
+  } else {
+    if (props && children) {
+      props.children = children.join("");
+    }
+    let isClass = false;
+    let component;
+    try {
+      component = new (element as JSX.ElementClassConstructor)();
+      isClass = true;
+      html = component.render();
+    } catch {}
+
+    if (!isClass) {
+      html = (element as FunctionComponent)(props);
+    }
+  }
+
+  return html;
+};
