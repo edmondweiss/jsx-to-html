@@ -54,13 +54,13 @@ declare global {
     };
   }
 }
-export type HmtlTagName = string;
+export type HtmlTagName = string;
 export type FunctionComponent<
   P extends Record<string, any> = Record<string, any>
 > = (props: P) => JSX.Element;
 
 type JSXConverter<K extends keyof JSX.IntrinsicElements> = (
-  element: HmtlTagName | JSX.ElementClassConstructor | FunctionComponent,
+  element: HtmlTagName | JSX.ElementClassConstructor | FunctionComponent,
   props: Record<string, any>,
   ...children: string[]
 ) => void;
