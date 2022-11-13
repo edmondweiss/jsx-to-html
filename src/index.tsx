@@ -93,15 +93,7 @@ export const jsxToHtml: JSXConverter<keyof JSX.IntrinsicElements> = (
   props,
   ...children
 ) => {
-  console.log(
-    "**********************************************************************"
-  );
-  console.log("tagName:", element);
-  console.log("props:", props);
-  console.log("children:", children);
-
   let html = "";
-
   if (typeof element === "string") {
     html = VOID_ELEMENT_SET.has(element)
       ? `<${element} ${props ? ` ${renderProps(props)}` : ""}/>`
@@ -120,7 +112,6 @@ export const jsxToHtml: JSXConverter<keyof JSX.IntrinsicElements> = (
     if (isClass(element)) {
       html = new element(props).render();
     } else {
-      console.log("function type");
       html = element(props);
     }
   }
