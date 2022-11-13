@@ -37,6 +37,7 @@ const VOID_ELEMENT_SET = new Set([
 ]);
 
 const ELEMENT_ATTRIBUTE_EXCLUSION_SET = new Set(["children"]);
+const attributeTransformMap = new Map([["className", "class"]]);
 
 function renderProps(props: Record<string, any> | undefined): string {
   if (!props) {
@@ -47,6 +48,7 @@ function renderProps(props: Record<string, any> | undefined): string {
     if (ELEMENT_ATTRIBUTE_EXCLUSION_SET.has(key)) {
       continue;
     }
+    key = attributeTransformMap.get(key) ?? key;
     if (typeof value === "string" || typeof value === "number") {
       let attr = `${key}="${
         String(value as number | string)
